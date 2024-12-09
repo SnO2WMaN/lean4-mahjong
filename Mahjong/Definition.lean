@@ -135,47 +135,47 @@ def S9 : Num.Not1  := { suit := S, digit := nine, not1 := by simp }
 end Num
 
 /-- 風牌 -/
-inductive Winds : Type
+inductive Wind : Type
 | west -- 西
 | east -- 東
 | north -- 北
 | south -- 南
 
-namespace Winds
+namespace Wind
 
-def Winds.toString : Winds → String
+def Wind.toString : Wind → String
 | west => "西"
 | east => "東"
 | north => "北"
 | south => "南"
-instance : ToString Winds where toString := Winds.toString
+instance : ToString Wind where toString := Wind.toString
 
-def West := Winds.west
-def East := Winds.east
-def North := Winds.north
-def South := Winds.south
+def West := Wind.west
+def East := Wind.east
+def North := Wind.north
+def South := Wind.south
 
-end Winds
+end Wind
 
 /-- 字牌 -/
-inductive Dragons : Type
+inductive Dragon : Type
 | red -- 中
 | green -- 發
 | white -- 白
 
-namespace Dragons
+namespace Dragon
 
-def toString : Dragons → String
+def toString : Dragon → String
 | red => "中"
 | green => "發"
 | white => "白"
-instance : ToString Dragons where toString := Dragons.toString
+instance : ToString Dragon where toString := Dragon.toString
 
-def Red := Dragons.red
-def Green := Dragons.green
-def White := Dragons.white
+def Red := Dragon.red
+def Green := Dragon.green
+def White := Dragon.white
 
-end Dragons
+end Dragon
 
 open Num.Suit Num.Digit
 
@@ -190,7 +190,7 @@ export Tile (Tile)
 
 namespace Hand
 
-open Tile Num Winds Dragons
+open Tile Num Dragon
 
 def Dragon3 (d : Dragon) := [d, d, d]
 
