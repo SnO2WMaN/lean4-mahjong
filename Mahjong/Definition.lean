@@ -179,7 +179,14 @@ end Dragons
 
 open Num.Suit Num.Digit
 
+inductive Tile where
+  | num (n: Num)
+  | wind (w: Wind)
+  | dragon (d: Dragon)
+
 end Tile
+
+export Tile (Tile)
 
 namespace Hand
 
