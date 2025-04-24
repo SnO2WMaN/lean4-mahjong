@@ -73,12 +73,12 @@ protected def next : Num.Digit → Num.Digit
   | n8 => n9
   | n9 => n1
 
-theorem eq_ring_prev_next (d : Digit) : d.prev.next = d := by
+theorem eq_prev_next (d : Digit) : d.prev.next = d := by
   cases d <;> simp [Digit.prev, Digit.next]
 
-theorem ring_prev_not1_neq_9 (d : Digit) (h : d ≠ .n1): d.prev ≠ .n9 := by
+theorem prev_not1_neq_9 (d : Digit) (h : d ≠ .n1): d.prev ≠ .n9 := by
   cases d; repeat (first | contradiction | simp [Digit.prev])
-theorem ring_next_not9_neq_1 (d : Digit) (h : d ≠ .n9): d.next ≠ .n1 := by
+theorem next_not9_neq_1 (d : Digit) (h : d ≠ .n9): d.next ≠ .n1 := by
   cases d; repeat (first | contradiction | simp [Digit.next])
 
 end Num.Digit
@@ -111,7 +111,7 @@ instance : Coe Not19 Not1 where coe n := { suit := n.suit, digit := n.digit, not
 protected def Not1.prev (n : Not1) : Not9 := {
   suit := n.suit,
   digit := n.digit.prev,
-  not9 := Digit.ring_prev_not1_neq_9 n.digit n.not1
+  not9 := Digit.prev_not1_neq_9 n.digit n.not1
   }
 
 instance : ToString Not9 where toString n := toString n.toNum
@@ -120,7 +120,7 @@ instance : Coe Not19 Not9 where coe n := { suit := n.suit, digit := n.digit, not
 protected def Not9.next (n : Not9) : Not1 := {
   suit := n.suit,
   digit := n.digit.next,
-  not1 := Digit.ring_next_not9_neq_1 n.digit n.not9
+  not1 := Digit.next_not9_neq_1 n.digit n.not9
   }
 
 def M1 : Num.Not9  := { suit := .man, digit := .n1, not9 := by simp }
@@ -157,29 +157,57 @@ end Num
 
 /-- 風牌 -/
 inductive Wind
-  | north -- 北
-  | west -- 西
-  | south -- 南
   | east -- 東
+  | south -- 南
+  | west -- 西
+  | north -- 北
 
 instance : ToString Wind where
   toString w := match w with
-    | .west => "西"
     | .east => "東"
-    | .north => "北"
     | .south => "南"
+    | .west => "西"
+    | .north => "北"
+
+namespace Wind
+protected def next : Wind → Wind
+  | .east => .south
+  | .south => .west
+  | .west => .north
+  | .north => .east
+protected def prev : Wind → Wind
+  | .east => .north
+  | .south => .east
+  | .west => .south
+  | .north => .west
+theorem eq_prev_next (w : Wind) : w.prev.next = w := by
+  cases w <;> simp [Wind.prev, Wind.next]
+end Wind
 
 /-- 字牌 -/
 inductive Dragon
-| red -- 中
-| green -- 發
-| white -- 白
+  | white -- 白
+  | green -- 發
+  | red -- 中
 
 instance : ToString Dragon where
   toString d := match d with
-    | .red => "中"
-    | .green => "發"
     | .white => "白"
+    | .green => "發"
+    | .red => "中"
+
+namespace Dragon
+protected def next : Dragon → Dragon
+  | .white => .green
+  | .green => .red
+  | .red => .white
+protected def prev : Dragon → Dragon
+  | .white => .red
+  | .green => .white
+  | .red => .green
+theorem Dragon.eq_prev_next (d : Dragon) : d.prev.next = d := by
+  cases d <;> simp [Dragon.prev, Dragon.next]
+end Dragon
 
 open Num.Suit Num.Digit
 
@@ -187,6 +215,12 @@ inductive Tile where
   | num (n: Num)
   | wind (w: Wind)
   | dragon (d: Dragon)
+
+instance : ToString Tile where
+  toString tile := match tile with
+    | .num n => toString n
+    | .wind w => toString w
+    | .dragon d => toString d
 
 end Tile
 
