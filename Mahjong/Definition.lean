@@ -205,7 +205,7 @@ protected def prev : Dragon → Dragon
   | .white => .red
   | .green => .white
   | .red => .green
-theorem Dragon.eq_prev_next (d : Dragon) : d.prev.next = d := by
+theorem eq_prev_next (d : Dragon) : d.prev.next = d := by
   cases d <;> simp [Dragon.prev, Dragon.next]
 end Dragon
 
