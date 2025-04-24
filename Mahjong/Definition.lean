@@ -51,7 +51,7 @@ instance : OfNat Num.Digit n where
 
 namespace Num.Digit
 
-def prev : Num.Digit → Num.Digit
+protected def prev : Num.Digit → Num.Digit
   | n1 => n9
   | n2 => n1
   | n3 => n2
@@ -62,7 +62,7 @@ def prev : Num.Digit → Num.Digit
   | n8 => n7
   | n9 => n8
 
-def next : Num.Digit → Num.Digit
+protected def next : Num.Digit → Num.Digit
   | n1 => n2
   | n2 => n3
   | n3 => n4
@@ -74,12 +74,12 @@ def next : Num.Digit → Num.Digit
   | n9 => n1
 
 theorem eq_ring_prev_next (d : Digit) : d.prev.next = d := by
-  cases d <;> simp [prev, next]
+  cases d <;> simp [Digit.prev, Digit.next]
 
 theorem ring_prev_not1_neq_9 (d : Digit) (h : d ≠ .n1): d.prev ≠ .n9 := by
-  cases d; repeat (first | contradiction | simp [prev])
+  cases d; repeat (first | contradiction | simp [Digit.prev])
 theorem ring_next_not9_neq_1 (d : Digit) (h : d ≠ .n9): d.next ≠ .n1 := by
-  cases d; repeat (first | contradiction | simp [next])
+  cases d; repeat (first | contradiction | simp [Digit.next])
 
 end Num.Digit
 
@@ -108,7 +108,7 @@ structure Not9 extends Num where
 instance : ToString Not1 where toString n := toString n.toNum
 instance : Coe Not1 Num where coe n := { suit := n.suit, digit := n.digit }
 instance : Coe Not19 Not1 where coe n := { suit := n.suit, digit := n.digit, not1 := n.not1 }
-def Not1.prev (n : Not1) : Not9 := {
+protected def Not1.prev (n : Not1) : Not9 := {
   suit := n.suit,
   digit := n.digit.prev,
   not9 := Digit.ring_prev_not1_neq_9 n.digit n.not1
@@ -117,7 +117,7 @@ def Not1.prev (n : Not1) : Not9 := {
 instance : ToString Not9 where toString n := toString n.toNum
 instance : Coe Not9 Num where coe n := { suit := n.suit, digit := n.digit }
 instance : Coe Not19 Not9 where coe n := { suit := n.suit, digit := n.digit, not9 := n.not9 }
-def Not9.next (n : Not9) : Not1 := {
+protected def Not9.next (n : Not9) : Not1 := {
   suit := n.suit,
   digit := n.digit.next,
   not1 := Digit.ring_next_not9_neq_1 n.digit n.not9
@@ -157,10 +157,10 @@ end Num
 
 /-- 風牌 -/
 inductive Wind
-  | west -- 西
-  | east -- 東
   | north -- 北
+  | west -- 西
   | south -- 南
+  | east -- 東
 
 instance : ToString Wind where
   toString w := match w with
