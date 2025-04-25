@@ -5,7 +5,7 @@ inductive Num.Suit where
   | man -- 萬子
   | pin -- 筒子
   | sou -- 索子
-  deriving Inhabited
+  deriving Inhabited, DecidableEq
 
 instance : ToString Num.Suit where
   toString suit := match suit with
@@ -23,7 +23,7 @@ inductive Num.Digit where
   | n7
   | n8
   | n9
-  deriving Inhabited
+  deriving Inhabited, DecidableEq
 
 instance : ToString Num.Digit where
   toString d := match d with
@@ -87,6 +87,7 @@ end Num.Digit
 structure Num where
   suit : Num.Suit
   digit : Num.Digit
+  deriving Inhabited, DecidableEq
 
 instance : ToString Num where
   toString n := s!"{n.digit}{n.suit}"
@@ -161,6 +162,7 @@ inductive Wind
   | south -- 南
   | west -- 西
   | north -- 北
+  deriving Inhabited, DecidableEq
 
 instance : ToString Wind where
   toString w := match w with
@@ -189,6 +191,7 @@ inductive Dragon
   | white -- 白
   | green -- 發
   | red -- 中
+  deriving Inhabited, DecidableEq
 
 instance : ToString Dragon where
   toString d := match d with
@@ -215,6 +218,7 @@ inductive Tile where
   | num (n: Num)
   | wind (w: Wind)
   | dragon (d: Dragon)
+  deriving Inhabited, DecidableEq
 
 instance : ToString Tile where
   toString tile := match tile with
