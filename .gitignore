@@ -1,2 +1,4 @@
-.*
-!.gitignore
+/.lake
+
+# VSCode
+.vscode/settings.json
