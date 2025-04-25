@@ -94,17 +94,16 @@ instance : ToString Num where
 
 namespace Num
 
-structure Not19 extends Num where
-  not1 : digit ≠ .n1
-  not9 : digit ≠ .n9
-instance : ToString Not19 where
-  toString n := toString n.toNum
 
 structure Not1 extends Num where
-  not1 : digit ≠ .n1
+  not1 : digit ≠ .n1 := by simp
 
 structure Not9 extends Num where
-  not9 : digit ≠ .n9
+  not9 : digit ≠ .n9 := by simp
+
+structure Not19 extends Num, Not1, Not9 where
+instance : ToString Not19 where
+  toString n := toString n.toNum
 
 instance : ToString Not1 where toString n := toString n.toNum
 instance : Coe Not1 Num where coe n := { suit := n.suit, digit := n.digit }
@@ -113,7 +112,7 @@ protected def Not1.prev (n : Not1) : Not9 := {
   suit := n.suit,
   digit := n.digit.prev,
   not9 := Digit.prev_not1_neq_9 n.digit n.not1
-  }
+}
 
 instance : ToString Not9 where toString n := toString n.toNum
 instance : Coe Not9 Num where coe n := { suit := n.suit, digit := n.digit }
@@ -122,37 +121,37 @@ protected def Not9.next (n : Not9) : Not1 := {
   suit := n.suit,
   digit := n.digit.next,
   not1 := Digit.next_not9_neq_1 n.digit n.not9
-  }
+}
 
-def M1 : Num.Not9  := { suit := .man, digit := .n1, not9 := by simp }
-def M2 : Num.Not19 := { suit := .man, digit := .n2, not1 := by simp, not9 := by simp }
-def M3 : Num.Not19 := { suit := .man, digit := .n3, not1 := by simp, not9 := by simp }
-def M4 : Num.Not19 := { suit := .man, digit := .n4, not1 := by simp, not9 := by simp }
-def M5 : Num.Not19 := { suit := .man, digit := .n5, not1 := by simp, not9 := by simp }
-def M6 : Num.Not19 := { suit := .man, digit := .n6, not1 := by simp, not9 := by simp }
-def M7 : Num.Not19 := { suit := .man, digit := .n7, not1 := by simp, not9 := by simp }
-def M8 : Num.Not19 := { suit := .man, digit := .n8, not1 := by simp, not9 := by simp }
-def M9 : Num.Not1  := { suit := .man, digit := .n9, not1 := by simp }
+def M1 : Num.Not9  := { suit := .man, digit := .n1 }
+def M2 : Num.Not19 := { suit := .man, digit := .n2 }
+def M3 : Num.Not19 := { suit := .man, digit := .n3 }
+def M4 : Num.Not19 := { suit := .man, digit := .n4 }
+def M5 : Num.Not19 := { suit := .man, digit := .n5 }
+def M6 : Num.Not19 := { suit := .man, digit := .n6 }
+def M7 : Num.Not19 := { suit := .man, digit := .n7 }
+def M8 : Num.Not19 := { suit := .man, digit := .n8 }
+def M9 : Num.Not1  := { suit := .man, digit := .n9 }
 
-def P1 : Num.Not9  := { suit := .pin, digit := .n1, not9 := by simp }
-def P2 : Num.Not19 := { suit := .pin, digit := .n2, not1 := by simp, not9 := by simp }
-def P3 : Num.Not19 := { suit := .pin, digit := .n3, not1 := by simp, not9 := by simp }
-def P4 : Num.Not19 := { suit := .pin, digit := .n4, not1 := by simp, not9 := by simp }
-def P5 : Num.Not19 := { suit := .pin, digit := .n5, not1 := by simp, not9 := by simp }
-def P6 : Num.Not19 := { suit := .pin, digit := .n6, not1 := by simp, not9 := by simp }
-def P7 : Num.Not19 := { suit := .pin, digit := .n7, not1 := by simp, not9 := by simp }
-def P8 : Num.Not19 := { suit := .pin, digit := .n8, not1 := by simp, not9 := by simp }
-def P9 : Num.Not1  := { suit := .pin, digit := .n9, not1 := by simp }
+def P1 : Num.Not9  := { suit := .pin, digit := .n1 }
+def P2 : Num.Not19 := { suit := .pin, digit := .n2 }
+def P3 : Num.Not19 := { suit := .pin, digit := .n3 }
+def P4 : Num.Not19 := { suit := .pin, digit := .n4 }
+def P5 : Num.Not19 := { suit := .pin, digit := .n5 }
+def P6 : Num.Not19 := { suit := .pin, digit := .n6 }
+def P7 : Num.Not19 := { suit := .pin, digit := .n7 }
+def P8 : Num.Not19 := { suit := .pin, digit := .n8 }
+def P9 : Num.Not1  := { suit := .pin, digit := .n9 }
 
-def S1 : Num.Not9  := { suit := .sou, digit := .n1, not9 := by simp }
-def S2 : Num.Not19 := { suit := .sou, digit := .n2, not1 := by simp, not9 := by simp }
-def S3 : Num.Not19 := { suit := .sou, digit := .n3, not1 := by simp, not9 := by simp }
-def S4 : Num.Not19 := { suit := .sou, digit := .n4, not1 := by simp, not9 := by simp }
-def S5 : Num.Not19 := { suit := .sou, digit := .n5, not1 := by simp, not9 := by simp }
-def S6 : Num.Not19 := { suit := .sou, digit := .n6, not1 := by simp, not9 := by simp }
-def S7 : Num.Not19 := { suit := .sou, digit := .n7, not1 := by simp, not9 := by simp }
-def S8 : Num.Not19 := { suit := .sou, digit := .n8, not1 := by simp, not9 := by simp }
-def S9 : Num.Not1  := { suit := .sou, digit := .n9, not1 := by simp }
+def S1 : Num.Not9  := { suit := .sou, digit := .n1 }
+def S2 : Num.Not19 := { suit := .sou, digit := .n2 }
+def S3 : Num.Not19 := { suit := .sou, digit := .n3 }
+def S4 : Num.Not19 := { suit := .sou, digit := .n4 }
+def S5 : Num.Not19 := { suit := .sou, digit := .n5 }
+def S6 : Num.Not19 := { suit := .sou, digit := .n6 }
+def S7 : Num.Not19 := { suit := .sou, digit := .n7 }
+def S8 : Num.Not19 := { suit := .sou, digit := .n8 }
+def S9 : Num.Not1  := { suit := .sou, digit := .n9 }
 
 end Num
 
