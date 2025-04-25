@@ -1,71 +1,85 @@
 namespace Mahjong
 namespace Tile
 
-inductive Num.Suit : Type
-| M -- 萬子
-| P -- 筒子
-| S -- 索子
-def Num.Suit.toString : Num.Suit → String
-| M => "萬"
-| P => "筒"
-| S => "索"
-instance : ToString Num.Suit where toString := Num.Suit.toString
+inductive Num.Suit where
+  | man -- 萬子
+  | pin -- 筒子
+  | sou -- 索子
+  deriving Inhabited, DecidableEq
 
-inductive Num.Digit : Type
-| one
-| two
-| three
-| four
-| five
-| six
-| seven
-| eight
-| nine
+instance : ToString Num.Suit where
+  toString suit := match suit with
+    | .man => "萬"
+    | .pin => "筒"
+    | .sou => "索"
+
+inductive Num.Digit where
+  | n1
+  | n2
+  | n3
+  | n4
+  | n5
+  | n6
+  | n7
+  | n8
+  | n9
+  deriving Inhabited, DecidableEq
+
+instance : ToString Num.Digit where
+  toString d := match d with
+    | .n1 => "一"
+    | .n2 => "二"
+    | .n3 => "三"
+    | .n4 => "四"
+    | .n5 => "五"
+    | .n6 => "六"
+    | .n7 => "七"
+    | .n8 => "八"
+    | .n9 => "九"
+instance : OfNat Num.Digit n where
+  ofNat := match n with
+    | 1 => .n1
+    | 2 => .n2
+    | 3 => .n3
+    | 4 => .n3
+    | 5 => .n5
+    | 6 => .n6
+    | 7 => .n7
+    | 8 => .n8
+    | 9 => .n9
+    | _ => panic! "Invalid number tile {n}"
 
 namespace Num.Digit
 
-def toString : Num.Digit → String
-| one => "一"
-| two => "二"
-| three => "三"
-| four => "四"
-| five => "五"
-| six => "六"
-| seven => "七"
-| eight => "八"
-| nine => "九"
-instance : ToString Num.Digit where toString := toString
+protected def prev : Num.Digit → Num.Digit
+  | n1 => n9
+  | n2 => n1
+  | n3 => n2
+  | n4 => n3
+  | n5 => n4
+  | n6 => n5
+  | n7 => n6
+  | n8 => n7
+  | n9 => n8
 
-def ring_prev
-  | one   => nine
-  | two   => one
-  | three => two
-  | four  => three
-  | five  => four
-  | six   => five
-  | seven => six
-  | eight => seven
-  | nine  => eight
+protected def next : Num.Digit → Num.Digit
+  | n1 => n2
+  | n2 => n3
+  | n3 => n4
+  | n4 => n5
+  | n5 => n6
+  | n6 => n7
+  | n7 => n8
+  | n8 => n9
+  | n9 => n1
 
-def ring_next
-  | one   => two
-  | two   => three
-  | three => four
-  | four  => five
-  | five  => six
-  | six   => seven
-  | seven => eight
-  | eight => nine
-  | nine  => one
+theorem eq_prev_next (d : Digit) : d.prev.next = d := by
+  cases d <;> simp [Digit.prev, Digit.next]
 
-theorem eq_ring_prev_next (d : Digit) : d.ring_prev.ring_next = d :=
-  by
-    cases d
-    all_goals
-      simp [ring_prev, ring_next]
-
-theorem ring_prev_not1_neq_9 (d : Digit) (h : d ≠ one): d.ring_prev ≠ nine := by cases d; repeat (first | contradiction | simp [ring_prev])
-theorem ring_next_not9_neq_1 (d : Digit) (h : d ≠ nine): d.ring_next ≠ one := by cases d; repeat (first | contradiction | simp [ring_next])
+theorem prev_not1_neq_9 (d : Digit) (h : d ≠ .n1): d.prev ≠ .n9 := by
+  cases d; repeat (first | contradiction | simp [Digit.prev])
+theorem next_not9_neq_1 (d : Digit) (h : d ≠ .n9): d.next ≠ .n1 := by
+  cases d; repeat (first | contradiction | simp [Digit.next])
 
 end Num.Digit
 
@@ -73,126 +87,163 @@ end Num.Digit
 structure Num where
   suit : Num.Suit
   digit : Num.Digit
+  deriving Inhabited, DecidableEq
+
+instance : ToString Num where
+  toString n := s!"{n.digit}{n.suit}"
 
 namespace Num
 
-def toString (n : Num) : String := s!"{n.digit}{n.suit}"
-instance : ToString Num where toString := Num.toString
-
-open Num.Suit Num.Digit
-
 structure Not19 extends Num where
-  not1 : digit ≠ one
-  not9 : digit ≠ nine
-instance : ToString Not19 where toString n := n.toString
+  not1 : digit ≠ .n1
+  not9 : digit ≠ .n9
+instance : ToString Not19 where
+  toString n := toString n.toNum
 
 structure Not1 extends Num where
-  not1 : digit ≠ one
+  not1 : digit ≠ .n1
 
 structure Not9 extends Num where
-  not9 : digit ≠ nine
+  not9 : digit ≠ .n9
 
-instance : ToString Not1 where toString n := n.toString
+instance : ToString Not1 where toString n := toString n.toNum
 instance : Coe Not1 Num where coe n := { suit := n.suit, digit := n.digit }
 instance : Coe Not19 Not1 where coe n := { suit := n.suit, digit := n.digit, not1 := n.not1 }
-def Not1.prev (n : Not1) : Not9 := { suit := n.suit, digit := n.digit.ring_prev, not9 := ring_prev_not1_neq_9 n.digit n.not1 }
+protected def Not1.prev (n : Not1) : Not9 := {
+  suit := n.suit,
+  digit := n.digit.prev,
+  not9 := Digit.prev_not1_neq_9 n.digit n.not1
+  }
 
-instance : ToString Not9 where toString n := n.toString
+instance : ToString Not9 where toString n := toString n.toNum
 instance : Coe Not9 Num where coe n := { suit := n.suit, digit := n.digit }
 instance : Coe Not19 Not9 where coe n := { suit := n.suit, digit := n.digit, not9 := n.not9 }
-def Not9.next (n : Not9) : Not1 := { suit := n.suit, digit := n.digit.ring_next, not1 := ring_next_not9_neq_1 n.digit n.not9 }
+protected def Not9.next (n : Not9) : Not1 := {
+  suit := n.suit,
+  digit := n.digit.next,
+  not1 := Digit.next_not9_neq_1 n.digit n.not9
+  }
 
-def M1 : Num.Not9  := { suit := M, digit := one, not9 := by simp }
-def M2 : Num.Not19 := { suit := M, digit := two, not1 := by simp, not9 := by simp }
-def M3 : Num.Not19 := { suit := M, digit := three, not1 := by simp, not9 := by simp }
-def M4 : Num.Not19 := { suit := M, digit := four, not1 := by simp, not9 := by simp }
-def M5 : Num.Not19 := { suit := M, digit := five, not1 := by simp, not9 := by simp }
-def M6 : Num.Not19 := { suit := M, digit := six, not1 := by simp, not9 := by simp }
-def M7 : Num.Not19 := { suit := M, digit := seven, not1 := by simp, not9 := by simp }
-def M8 : Num.Not19 := { suit := M, digit := eight, not1 := by simp, not9 := by simp }
-def M9 : Num.Not1  := { suit := M, digit := nine, not1 := by simp }
+def M1 : Num.Not9  := { suit := .man, digit := .n1, not9 := by simp }
+def M2 : Num.Not19 := { suit := .man, digit := .n2, not1 := by simp, not9 := by simp }
+def M3 : Num.Not19 := { suit := .man, digit := .n3, not1 := by simp, not9 := by simp }
+def M4 : Num.Not19 := { suit := .man, digit := .n4, not1 := by simp, not9 := by simp }
+def M5 : Num.Not19 := { suit := .man, digit := .n5, not1 := by simp, not9 := by simp }
+def M6 : Num.Not19 := { suit := .man, digit := .n6, not1 := by simp, not9 := by simp }
+def M7 : Num.Not19 := { suit := .man, digit := .n7, not1 := by simp, not9 := by simp }
+def M8 : Num.Not19 := { suit := .man, digit := .n8, not1 := by simp, not9 := by simp }
+def M9 : Num.Not1  := { suit := .man, digit := .n9, not1 := by simp }
 
-def P1 : Num.Not9  := { suit := P, digit := one, not9 := by simp }
-def P2 : Num.Not19 := { suit := P, digit := two, not1 := by simp, not9 := by simp }
-def P3 : Num.Not19 := { suit := P, digit := three, not1 := by simp, not9 := by simp }
-def P4 : Num.Not19 := { suit := P, digit := four, not1 := by simp, not9 := by simp }
-def P5 : Num.Not19 := { suit := P, digit := five, not1 := by simp, not9 := by simp }
-def P6 : Num.Not19 := { suit := P, digit := six, not1 := by simp, not9 := by simp }
-def P7 : Num.Not19 := { suit := P, digit := seven, not1 := by simp, not9 := by simp }
-def P8 : Num.Not19 := { suit := P, digit := eight, not1 := by simp, not9 := by simp }
-def P9 : Num.Not1  := { suit := P, digit := nine, not1 := by simp }
+def P1 : Num.Not9  := { suit := .pin, digit := .n1, not9 := by simp }
+def P2 : Num.Not19 := { suit := .pin, digit := .n2, not1 := by simp, not9 := by simp }
+def P3 : Num.Not19 := { suit := .pin, digit := .n3, not1 := by simp, not9 := by simp }
+def P4 : Num.Not19 := { suit := .pin, digit := .n4, not1 := by simp, not9 := by simp }
+def P5 : Num.Not19 := { suit := .pin, digit := .n5, not1 := by simp, not9 := by simp }
+def P6 : Num.Not19 := { suit := .pin, digit := .n6, not1 := by simp, not9 := by simp }
+def P7 : Num.Not19 := { suit := .pin, digit := .n7, not1 := by simp, not9 := by simp }
+def P8 : Num.Not19 := { suit := .pin, digit := .n8, not1 := by simp, not9 := by simp }
+def P9 : Num.Not1  := { suit := .pin, digit := .n9, not1 := by simp }
 
-def S1 : Num.Not9  := { suit := S, digit := one, not9 := by simp }
-def S2 : Num.Not19 := { suit := S, digit := two, not1 := by simp, not9 := by simp }
-def S3 : Num.Not19 := { suit := S, digit := three, not1 := by simp, not9 := by simp }
-def S4 : Num.Not19 := { suit := S, digit := four, not1 := by simp, not9 := by simp }
-def S5 : Num.Not19 := { suit := S, digit := five, not1 := by simp, not9 := by simp }
-def S6 : Num.Not19 := { suit := S, digit := six, not1 := by simp, not9 := by simp }
-def S7 : Num.Not19 := { suit := S, digit := seven, not1 := by simp, not9 := by simp }
-def S8 : Num.Not19 := { suit := S, digit := eight, not1 := by simp, not9 := by simp }
-def S9 : Num.Not1  := { suit := S, digit := nine, not1 := by simp }
+def S1 : Num.Not9  := { suit := .sou, digit := .n1, not9 := by simp }
+def S2 : Num.Not19 := { suit := .sou, digit := .n2, not1 := by simp, not9 := by simp }
+def S3 : Num.Not19 := { suit := .sou, digit := .n3, not1 := by simp, not9 := by simp }
+def S4 : Num.Not19 := { suit := .sou, digit := .n4, not1 := by simp, not9 := by simp }
+def S5 : Num.Not19 := { suit := .sou, digit := .n5, not1 := by simp, not9 := by simp }
+def S6 : Num.Not19 := { suit := .sou, digit := .n6, not1 := by simp, not9 := by simp }
+def S7 : Num.Not19 := { suit := .sou, digit := .n7, not1 := by simp, not9 := by simp }
+def S8 : Num.Not19 := { suit := .sou, digit := .n8, not1 := by simp, not9 := by simp }
+def S9 : Num.Not1  := { suit := .sou, digit := .n9, not1 := by simp }
 
 end Num
 
 /-- 風牌 -/
-inductive Winds : Type
-| west -- 西
-| east -- 東
-| north -- 北
-| south -- 南
+inductive Wind
+  | east -- 東
+  | south -- 南
+  | west -- 西
+  | north -- 北
+  deriving Inhabited, DecidableEq
 
-namespace Winds
+instance : ToString Wind where
+  toString w := match w with
+    | .east => "東"
+    | .south => "南"
+    | .west => "西"
+    | .north => "北"
 
-def Winds.toString : Winds → String
-| west => "西"
-| east => "東"
-| north => "北"
-| south => "南"
-instance : ToString Winds where toString := Winds.toString
-
-def West := Winds.west
-def East := Winds.east
-def North := Winds.north
-def South := Winds.south
-
-end Winds
+namespace Wind
+protected def next : Wind → Wind
+  | .east => .south
+  | .south => .west
+  | .west => .north
+  | .north => .east
+protected def prev : Wind → Wind
+  | .east => .north
+  | .south => .east
+  | .west => .south
+  | .north => .west
+theorem eq_prev_next (w : Wind) : w.prev.next = w := by
+  cases w <;> simp [Wind.prev, Wind.next]
+end Wind
 
 /-- 字牌 -/
-inductive Dragons : Type
-| red -- 中
-| green -- 發
-| white -- 白
+inductive Dragon
+  | white -- 白
+  | green -- 發
+  | red -- 中
+  deriving Inhabited, DecidableEq
 
-namespace Dragons
+instance : ToString Dragon where
+  toString d := match d with
+    | .white => "白"
+    | .green => "發"
+    | .red => "中"
 
-def toString : Dragons → String
-| red => "中"
-| green => "發"
-| white => "白"
-instance : ToString Dragons where toString := Dragons.toString
-
-def Red := Dragons.red
-def Green := Dragons.green
-def White := Dragons.white
-
-end Dragons
+namespace Dragon
+protected def next : Dragon → Dragon
+  | .white => .green
+  | .green => .red
+  | .red => .white
+protected def prev : Dragon → Dragon
+  | .white => .red
+  | .green => .white
+  | .red => .green
+theorem eq_prev_next (d : Dragon) : d.prev.next = d := by
+  cases d <;> simp [Dragon.prev, Dragon.next]
+end Dragon
 
 open Num.Suit Num.Digit
 
+inductive Tile where
+  | num (n: Num)
+  | wind (w: Wind)
+  | dragon (d: Dragon)
+  deriving Inhabited, DecidableEq
+
+instance : ToString Tile where
+  toString tile := match tile with
+    | .num n => toString n
+    | .wind w => toString w
+    | .dragon d => toString d
+
 end Tile
+
+export Tile (Tile)
 
 namespace Hand
 
-open Tile Num Winds Dragons
+open Tile Num Dragon
 
-def Dragon3 (d : Dragon) := [d, d, d]
+def dragon3 (d : Dragon) := [d, d, d]
 
-def Wind3 (w : Wind) := [w, w, w]
+def wind3 (w : Wind) := [w, w, w]
 
-def Shuntsu (n : Not19) := ([Not1.prev n, n, Not9.next n] : List Num)
-def Kotsu (n : Num) := [n, n, n]
+/-- 順子 -/
+def shuntsu (n : Not19) := ([Not1.prev n, n, Not9.next n] : List Num)
+def kotsu (n : Num) := [n, n, n]
 
 abbrev Tile : Type := Num
 
 end Hand
+
 end Mahjong
